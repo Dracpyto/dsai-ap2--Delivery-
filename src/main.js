@@ -1,5 +1,8 @@
-import { renderRestaurantes } from './components/restaurants.js';
+import { renderRestaurantes, restaurantes } from './components/restaurants.js';
 import { renderPedidos } from './components/orders.js';
+import { menusData } from './components/menu.js';
+import { buscar } from './js/search.js';
+import { renderResultadosBusca } from './components/search.js';
 import { obterUsuarioLogado, sairUsuario } from './js/database.js';
 
 // Atualiza a área do utilizador na barra de navegação
@@ -33,6 +36,52 @@ export function atualizarNavegacao() {
   }
 }
 
+// Executa a busca de restaurantes e pratos
+window.executarBusca = (termo) => {
+  const inputBusca = document.getElementById('input-busca');
+  const btnLimpar = document.getElementById('btn-limpar-busca');
+
+  const termoLimpo = (termo !== undefined ? termo : (inputBusca?.value || '')).trim();
+
+  if (!termoLimpo) {
+    window.voltarParaRestaurantes();
+    return;
+  }
+
+  if (btnLimpar) {
+    btnLimpar.classList.remove('hidden');
+  }
+
+  const resultados = buscar(termoLimpo, restaurantes, menusData);
+  renderResultadosBusca(termoLimpo, resultados);
+};
+
+// Limpa a busca e retorna à tela inicial
+window.limparBusca = () => {
+  const inputBusca = document.getElementById('input-busca');
+  const btnLimpar = document.getElementById('btn-limpar-busca');
+
+  if (inputBusca) {
+    inputBusca.value = '';
+    inputBusca.focus();
+  }
+
+  if (btnLimpar) {
+    btnLimpar.classList.add('hidden');
+  }
+
+  window.voltarParaRestaurantes();
+};
+
+// Executa a busca a partir de um termo predefinido (ex: chips de categorias ou sugestões)
+window.buscarPorTermo = (termo) => {
+  const inputBusca = document.getElementById('input-busca');
+  if (inputBusca) {
+    inputBusca.value = termo;
+  }
+  window.executarBusca(termo);
+};
+
 // Função para voltar à tela inicial
 window.voltarParaRestaurantes = () => {
   renderRestaurantes();
@@ -40,15 +89,21 @@ window.voltarParaRestaurantes = () => {
   if (btnInicio) {
     btnInicio.classList.add('hidden');
   }
+
+  const inputBusca = document.getElementById('input-busca');
+  const btnLimpar = document.getElementById('btn-limpar-busca');
+  if (inputBusca) inputBusca.value = '';
+  if (btnLimpar) btnLimpar.classList.add('hidden');
+
   atualizarNavegacao();
 };
+
 window.sairDaConta = () => {
   sairUsuario();
   atualizarNavegacao();
   renderRestaurantes();
   alert('Você saiu da conta. Agora outro usuário pode se cadastrar.');
 };
-
 
 // Função para abrir a tela de Pedidos
 window.verPedidos = () => {
@@ -57,6 +112,11 @@ window.verPedidos = () => {
   if (btnInicio) {
     btnInicio.classList.remove('hidden');
   }
+
+  const inputBusca = document.getElementById('input-busca');
+  const btnLimpar = document.getElementById('btn-limpar-busca');
+  if (inputBusca) inputBusca.value = '';
+  if (btnLimpar) btnLimpar.classList.add('hidden');
 };
 
 // Função para abrir a tela de Cadastro
@@ -73,6 +133,11 @@ window.abrirTelaCadastro = async () => {
         btnInicio.classList.remove('hidden');
       }
 
+      const inputBusca = document.getElementById('input-busca');
+      const btnLimpar = document.getElementById('btn-limpar-busca');
+      if (inputBusca) inputBusca.value = '';
+      if (btnLimpar) btnLimpar.classList.add('hidden');
+
       initRegisterEvents(() => {
         atualizarNavegacao();
         window.voltarParaRestaurantes();
@@ -83,8 +148,43 @@ window.abrirTelaCadastro = async () => {
   }
 };
 
+// Inicializa os ouvintes de eventos da barra de busca
+function inicializarEventosBusca() {
+  const inputBusca = document.getElementById('input-busca');
+  const btnLimpar = document.getElementById('btn-limpar-busca');
+
+  if (inputBusca) {
+    inputBusca.addEventListener('input', (e) => {
+      const valor = e.target.value;
+      if (valor.trim().length > 0) {
+        if (btnLimpar) btnLimpar.classList.remove('hidden');
+        window.executarBusca(valor);
+      } else {
+        if (btnLimpar) btnLimpar.classList.add('hidden');
+        window.voltarParaRestaurantes();
+      }
+    });
+
+    inputBusca.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        window.limparBusca();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        window.executarBusca(inputBusca.value);
+      }
+    });
+  }
+}
+
 // Arranque da aplicação
-document.addEventListener('DOMContentLoaded', () => {
+function iniciarApp() {
   renderRestaurantes();
   atualizarNavegacao();
-});
+  inicializarEventosBusca();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', iniciarApp);
+} else {
+  iniciarApp();
+}

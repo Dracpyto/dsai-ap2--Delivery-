@@ -41,15 +41,16 @@ https://admirable-quokka-46ca6a.netlify.app/
 
 ## Testes automatizados
 
-O projeto possui testes automatizados para as regras de validação do checkout.
+O projeto possui testes automatizados para as regras de validação do checkout e para a ferramenta de busca de restaurantes e pratos.
 
 Para executar:
 
 ```bash
 node tests/checkout-validation.test.js
+node tests/search.test.js
 ```
 
-Os testes verificam:
+Os testes de checkout verificam:
 
 - rejeição de carrinho vazio;
 - obrigatoriedade do nome do cliente;
@@ -57,13 +58,18 @@ Os testes verificam:
 - rejeição de valor total inválido;
 - aceitação de um pedido válido.
 
-Resultado atual: **5 testes executados com sucesso**.
+Os testes da ferramenta de busca verificam:
 
-Contagem atual dos testes pelo cloc:
+- busca por restaurantes por nome e categoria;
+- busca por pratos por nome e descrição;
+- insensibilidade a maiúsculas/minúsculas e acentuação;
+- retorno correto dos dados do restaurante associados a cada prato;
+- retorno de `encontrado: false` e lista vazia para termos inexistentes;
+- tratamento de termos vazios ou com apenas espaços;
+- retorno simultâneo de restaurantes e pratos quando ambos correspondem ao termo;
+- localização de pratos por ID para adição direta ao carrinho.
 
-| Linguagem | Arquivos | Código |
-|---|---:|---:|
-| JavaScript | 1 | 34 |
+Resultado atual: **18 testes executados com sucesso** (5 de checkout + 13 de busca).
 
 ## Especificações
 
@@ -74,6 +80,7 @@ Atualmente estão documentadas:
 - `2026-10-01-visao-geral.md`
 - `2026-10-06-validacao-checkout.md`
 - `2026-10-06-cardapio-visual.md`
+- `2026-11-15-ferramenta-busca.md`
 
 A especificação de validação do checkout foi versionada antes da implementação e dos respectivos testes.
 
@@ -85,7 +92,12 @@ Os registros das interações utilizadas durante o desenvolvimento estão armaze
 
 `prompts/sessoes/`
 
-Os registros devem corresponder às interações efetivamente utilizadas durante o desenvolvimento.
+Atualmente estão documentadas:
+
+- `2026-10-01-0935-gemini.md`
+- `2026-11-15-1627-gemini.md`
+
+Os registros correspondem às interações efetivamente utilizadas durante o desenvolvimento.
 
 ## Contagem de Linhas (cloc)
 

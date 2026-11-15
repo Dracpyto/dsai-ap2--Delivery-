@@ -20002,7 +20002,7 @@ import { adicionarAoCarrinho, renderCarrinho } from './cart.js';
 // DADOS DOS CARDÁPIOS
 // ======================================================
 
-const menusData = {
+export const menusData = {
 
   // ----------------------------------------------------
   // RESTAURANTE 1 - BURGER HOUSE
@@ -20292,7 +20292,18 @@ export function abrirCardapio(restaurantId) {
 // ======================================================
 
 window.adicionarItem = function (itemId) {
-  const item = pratosAtuais.find(prato => prato.id === itemId);
+  let item = pratosAtuais.find(prato => prato.id === itemId);
+
+  // Se não estiver no cardápio atualmente aberto (ex: busca), procura em todos os cardápios
+  if (!item) {
+    for (const restId in menusData) {
+      const encontrado = menusData[restId].find(prato => prato.id === itemId);
+      if (encontrado) {
+        item = encontrado;
+        break;
+      }
+    }
+  }
 
   if (!item) {
     console.error('Produto não encontrado:', itemId);

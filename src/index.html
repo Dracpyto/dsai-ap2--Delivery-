@@ -9,16 +9,39 @@
 </head>
 <body class="bg-gray-50 min-h-screen text-gray-800">
 
-  <header class="bg-red-600 text-white shadow-md">
-    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+  <header class="bg-red-600 text-white shadow-md sticky top-0 z-40">
+    <div class="container mx-auto px-6 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
       <h1 class="text-2xl font-bold flex items-center gap-2 cursor-pointer" onclick="voltarParaRestaurantes()">
         🍔 DeliveryFast
       </h1>
 
+      <!-- Barra de busca no Header -->
+      <div class="w-full md:w-96 relative">
+        <div class="relative flex items-center">
+          <span class="absolute left-3.5 text-gray-400 pointer-events-none text-sm">🔍</span>
+          <input
+            type="text"
+            id="input-busca"
+            placeholder="Buscar restaurantes ou pratos..."
+            class="w-full pl-10 pr-10 py-2 rounded-full text-gray-800 bg-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-inner transition"
+            autocomplete="off"
+          />
+          <button
+            id="btn-limpar-busca"
+            type="button"
+            onclick="limparBusca()"
+            class="absolute right-3 text-gray-400 hover:text-gray-600 hidden text-sm font-bold p-1 transition"
+            title="Limpar busca"
+          >✕</button>
+        </div>
+      </div>
+
       <nav class="flex items-center gap-6 font-semibold">
         <a href="#" id="btn-inicio" onclick="voltarParaRestaurantes()" class="hover:underline hidden">Início</a>
         <a href="#" onclick="verPedidos()" class="hover:underline">Pedidos</a>
-        <a href="#" onclick="abrirTelaCadastro()" class="hover:underline">Cadastrar</a>
+        <div id="area-usuario">
+          <a href="#" onclick="abrirTelaCadastro()" class="hover:underline">Cadastrar</a>
+        </div>
         
         <div class="flex items-center gap-1 bg-red-700 px-3 py-1 rounded-full text-sm font-bold">
           <span>🛒</span>

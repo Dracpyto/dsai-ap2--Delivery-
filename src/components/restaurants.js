@@ -20014,6 +20014,16 @@ export function renderRestaurantes() {
     btnInicio.classList.add('hidden');
   }
 
+  // Limpa o campo de busca quando volta para a tela inicial de restaurantes
+  const inputBusca = document.getElementById('input-busca');
+  const btnLimpar = document.getElementById('btn-limpar-busca');
+  if (inputBusca) {
+    inputBusca.value = '';
+  }
+  if (btnLimpar) {
+    btnLimpar.classList.add('hidden');
+  }
+
   // Remove o widget flutuante se o usuário voltar para a lista de restaurantes
   const widgetCarrinho = document.getElementById('cart-floating-widget');
   if (widgetCarrinho) {
@@ -20034,6 +20044,18 @@ export function renderRestaurantes() {
   `).join('');
 
   container.innerHTML = `
+    <div class="mb-6">
+      <div class="flex flex-wrap gap-2 items-center">
+        <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider mr-1">Filtrar por:</span>
+        <button onclick="window.buscarPorTermo('Hambúrguer')" class="bg-white hover:bg-red-50 hover:text-red-600 border border-gray-200 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-full transition shadow-sm flex items-center gap-1">🍔 Hambúrgueres</button>
+        <button onclick="window.buscarPorTermo('Pizza')" class="bg-white hover:bg-red-50 hover:text-red-600 border border-gray-200 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-full transition shadow-sm flex items-center gap-1">🍕 Pizzas</button>
+        <button onclick="window.buscarPorTermo('Massa')" class="bg-white hover:bg-red-50 hover:text-red-600 border border-gray-200 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-full transition shadow-sm flex items-center gap-1">🍝 Massas</button>
+        <button onclick="window.buscarPorTermo('Japonesa')" class="bg-white hover:bg-red-50 hover:text-red-600 border border-gray-200 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-full transition shadow-sm flex items-center gap-1">🍣 Sushi</button>
+        <button onclick="window.buscarPorTermo('Típica')" class="bg-white hover:bg-red-50 hover:text-red-600 border border-gray-200 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-full transition shadow-sm flex items-center gap-1">🇧🇷 Brasileira</button>
+        <button onclick="window.buscarPorTermo('Sobremesa')" class="bg-white hover:bg-red-50 hover:text-red-600 border border-gray-200 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-full transition shadow-sm flex items-center gap-1">🍰 Sobremesas</button>
+      </div>
+    </div>
+
     <h2 class="text-xl font-bold mb-4 text-gray-800">Restaurantes Disponíveis</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       ${listaHtml}
