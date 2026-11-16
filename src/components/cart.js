@@ -20131,7 +20131,7 @@ window.finalizarPedido = () => {
   0
 );
 
-const endereco = prompt('Digite o endereço de entrega:');
+const endereco = prompt('Confirme ou digite o endereço de entrega:', usuario.endereco || '');
 
 const pedido = {
   itens: carrinho,

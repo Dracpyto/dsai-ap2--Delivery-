@@ -1,5 +1,6 @@
 import { renderRestaurantes, restaurantes } from './components/restaurants.js';
 import { renderPedidos } from './components/orders.js';
+import { renderPerfil, renderEdicaoPerfil } from './components/profile.js';
 import { menusData } from './components/menu.js';
 import { buscar } from './js/search.js';
 import { renderResultadosBusca } from './components/search.js';
@@ -14,12 +15,16 @@ export function atualizarNavegacao() {
     if (usuario) {
       areaUsuario.innerHTML = `
         <div class="flex items-center gap-3">
-          <div class="flex items-center gap-2 text-gray-800 font-semibold bg-gray-100 px-3 py-1.5 rounded-full border border-gray-200">
+          <button
+            onclick="window.abrirPerfil()"
+            class="flex items-center gap-2 text-gray-800 font-semibold bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full border border-gray-200 transition"
+            title="Ver meu perfil"
+          >
             <span class="w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center font-bold text-sm">
               ${usuario.nome.charAt(0).toUpperCase()}
             </span>
             <span class="text-sm">Olá, ${usuario.nome.split(' ')[0]}</span>
-          </div>
+          </button>
 
           <button onclick="window.sairDaConta()" class="text-sm text-red-600 hover:underline font-medium">
             Sair
@@ -175,6 +180,27 @@ function inicializarEventosBusca() {
     });
   }
 }
+
+// ── Funções globais de navegação do Perfil ──────────────────────────────────
+
+window.abrirPerfil = () => {
+  renderPerfil();
+  const btnInicio = document.getElementById('btn-inicio');
+  if (btnInicio) btnInicio.classList.remove('hidden');
+  const inputBusca = document.getElementById('input-busca');
+  const btnLimpar  = document.getElementById('btn-limpar-busca');
+  if (inputBusca) inputBusca.value = '';
+  if (btnLimpar)  btnLimpar.classList.add('hidden');
+};
+
+window.abrirEdicaoPerfil = () => {
+  renderEdicaoPerfil();
+  const btnInicio = document.getElementById('btn-inicio');
+  if (btnInicio) btnInicio.classList.remove('hidden');
+};
+
+// Expõe atualizarNavegacao para o profile.js chamar após salvar
+window.atualizarNavegacaoGlobal = () => atualizarNavegacao();
 
 // Arranque da aplicação
 function iniciarApp() {

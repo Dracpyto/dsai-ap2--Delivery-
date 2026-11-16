@@ -19994,3 +19994,290 @@ export function renderModule_profile_3999() {
   return '<div class="item-profile-3999">Estrutura de dados 3999</div>';
 }
 
+
+
+import { obterUsuarioLogado, atualizarUsuario } from '../js/database.js';
+import { validarAtualizacaoPerfil, formatarEnderecoCompleto } from '../js/register-validation.js';
+
+// ======================================================
+// TELA DE PERFIL — VISUALIZAÇÃO
+// ======================================================
+
+export function renderPerfil() {
+  const container = document.getElementById('app');
+  const btnInicio = document.getElementById('btn-inicio');
+  if (!container) return;
+
+  if (btnInicio) btnInicio.classList.remove('hidden');
+
+  const widgetCarrinho = document.getElementById('cart-floating-widget');
+  if (widgetCarrinho) widgetCarrinho.innerHTML = '';
+
+  const usuario = obterUsuarioLogado();
+
+  if (!usuario) {
+    container.innerHTML = `
+      <div class="max-w-md mx-auto text-center py-16">
+        <div class="text-6xl mb-4">🔒</div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Acesso restrito</h2>
+        <p class="text-gray-500 mb-6">Você precisa estar logado para acessar seu perfil.</p>
+        <button onclick="window.abrirTelaCadastro()"
+          class="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2.5 rounded-xl transition">
+          Criar conta / Entrar
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  const iniciais = usuario.nome
+    .split(' ').filter(p => p.length > 0).slice(0, 2)
+    .map(p => p[0].toUpperCase()).join('');
+
+  const endDet = usuario.enderecoDetalhes || {};
+  const enderecoFormatado = usuario.endereco || formatarEnderecoCompleto(endDet) || 'Não informado';
+  const dataCadastro = usuario.dataCadastro || '—';
+  const ultimaAtualizacao = usuario.ultimaAtualizacao || '—';
+
+  container.innerHTML = `
+    <div class="max-w-2xl mx-auto pb-10">
+
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-5 flex flex-col sm:flex-row items-center sm:items-start gap-5">
+        <div class="flex-shrink-0 w-20 h-20 rounded-full bg-red-600 text-white flex items-center justify-center text-3xl font-bold shadow-md">
+          ${iniciais}
+        </div>
+        <div class="flex-1 text-center sm:text-left">
+          <h2 class="text-2xl font-bold text-gray-900">${usuario.nome}</h2>
+          <p class="text-gray-500 text-sm mt-0.5">${usuario.email}</p>
+          <div class="flex flex-wrap justify-center sm:justify-start gap-2 mt-2">
+            <span class="bg-green-100 text-green-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">✅ Cliente Ativo</span>
+            ${usuario.preferenciaAlimentar && usuario.preferenciaAlimentar !== 'Sem restrições'
+              ? `<span class="bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">🥗 ${usuario.preferenciaAlimentar}</span>` : ''}
+            ${usuario.pagamentoPreferido
+              ? `<span class="bg-yellow-100 text-yellow-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">💳 ${usuario.pagamentoPreferido}</span>` : ''}
+          </div>
+        </div>
+        <button onclick="window.abrirEdicaoPerfil()"
+          class="flex-shrink-0 bg-red-600 hover:bg-red-700 text-white font-semibold px-5 py-2 rounded-xl transition shadow-sm flex items-center gap-1.5 text-sm">
+          ✏️ Editar Meus Dados
+        </button>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-5">
+        <h3 class="font-bold text-gray-500 text-xs uppercase tracking-wider mb-4">👤 Dados Pessoais</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          ${itemPerfil('Nome Completo', usuario.nome)}
+          ${itemPerfil('E-mail', usuario.email)}
+          ${itemPerfil('Idade', usuario.idade ? `${usuario.idade} anos` : '—')}
+          ${itemPerfil('Telefone / WhatsApp', usuario.telefone || '—')}
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-5">
+        <h3 class="font-bold text-gray-500 text-xs uppercase tracking-wider mb-4">📍 Endereço de Entrega</h3>
+        <div class="bg-red-50 border border-red-100 rounded-xl p-3.5 mb-4 text-sm text-red-800 font-medium flex items-start gap-2">
+          <span>📌</span><span>${enderecoFormatado}</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          ${itemPerfil('Rua / Logradouro', endDet.rua || '—')}
+          ${itemPerfil('Número', endDet.numero || '—')}
+          ${itemPerfil('Complemento', endDet.complemento || '—')}
+          ${itemPerfil('Bairro', endDet.bairro || '—')}
+          ${itemPerfil('Cidade / UF', endDet.cidade || '—')}
+          ${itemPerfil('CEP', endDet.cep || '—')}
+        </div>
+        ${usuario.pontoReferencia ? `
+        <div class="mt-3 text-sm text-gray-600 bg-gray-50 rounded-xl p-3 border border-gray-100">
+          <span class="font-semibold">Ponto de referência:</span> ${usuario.pontoReferencia}
+        </div>` : ''}
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-5">
+        <h3 class="font-bold text-gray-500 text-xs uppercase tracking-wider mb-4">⚙️ Preferências de Delivery</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          ${itemPerfil('Preferência Alimentar', usuario.preferenciaAlimentar || 'Sem restrições')}
+          ${itemPerfil('Pagamento Preferido', usuario.pagamentoPreferido || '—')}
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-5">
+        <h3 class="font-bold text-gray-500 text-xs uppercase tracking-wider mb-4">📅 Histórico da Conta</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          ${itemPerfil('Cadastrado em', dataCadastro)}
+          ${itemPerfil('Última atualização', ultimaAtualizacao)}
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-3">
+        <button onclick="window.verPedidos()"
+          class="flex-1 min-w-[180px] bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl text-sm transition flex items-center justify-center gap-2">
+          📦 Meus Pedidos
+        </button>
+        <button onclick="window.voltarParaRestaurantes()"
+          class="flex-1 min-w-[180px] bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 rounded-xl text-sm transition flex items-center justify-center gap-2">
+          🍔 Ver Restaurantes
+        </button>
+      </div>
+
+    </div>
+  `;
+}
+
+function itemPerfil(label, valor) {
+  return `
+    <div class="bg-gray-50 rounded-lg px-3.5 py-2.5 border border-gray-100">
+      <span class="block text-xs text-gray-400 font-medium mb-0.5">${label}</span>
+      <span class="text-gray-800 font-semibold">${valor}</span>
+    </div>
+  `;
+}
+
+// ======================================================
+// TELA DE EDIÇÃO DO PERFIL
+// ======================================================
+
+export function renderEdicaoPerfil() {
+  const container = document.getElementById('app');
+  if (!container) return;
+
+  const u = obterUsuarioLogado();
+  if (!u) return;
+  const e = u.enderecoDetalhes || {};
+
+  container.innerHTML = `
+    <div class="max-w-2xl mx-auto pb-10">
+
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-900">Editar Meu Perfil</h2>
+          <p class="text-sm text-gray-500 mt-0.5">Atualize seus dados pessoais e de entrega</p>
+        </div>
+        <button onclick="window.abrirPerfil()"
+          class="text-sm text-gray-500 hover:text-red-600 font-semibold hover:underline">✕ Cancelar</button>
+      </div>
+
+      <form id="form-editar-perfil" class="flex flex-col gap-5">
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h3 class="font-bold text-gray-500 text-xs uppercase tracking-wider mb-4">👤 Dados Pessoais</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="sm:col-span-2">${inputEdit('Nome Completo *', 'edit-nome', 'text', u.nome, 'Ex: Maria dos Santos')}</div>
+            ${inputEdit('E-mail *', 'edit-email', 'email', u.email, 'seu@email.com')}
+            ${inputEdit('Idade *', 'edit-idade', 'number', u.idade || '', 'Ex: 28')}
+            ${inputEdit('Telefone / WhatsApp *', 'edit-telefone', 'tel', u.telefone || '', '(11) 98765-4321')}
+          </div>
+          <div class="mt-3">
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Nova Senha <span class="text-gray-400 font-normal">(deixe em branco para manter a atual)</span></label>
+            <input type="password" id="edit-senha" placeholder="Nova senha (mínimo 4 dígitos)"
+              class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none transition" />
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h3 class="font-bold text-gray-500 text-xs uppercase tracking-wider mb-4">📍 Endereço de Entrega</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="sm:col-span-2">${inputEdit('Rua / Logradouro *', 'edit-rua', 'text', e.rua || '', 'Av. Paulista')}</div>
+            ${inputEdit('Número *', 'edit-numero', 'text', e.numero || '', '100')}
+            ${inputEdit('Complemento', 'edit-complemento', 'text', e.complemento || '', 'Apto 42')}
+            ${inputEdit('Bairro *', 'edit-bairro', 'text', e.bairro || '', 'Bela Vista')}
+            ${inputEdit('Cidade / UF *', 'edit-cidade', 'text', e.cidade || '', 'São Paulo - SP')}
+            ${inputEdit('CEP', 'edit-cep', 'text', e.cep || '', '01310-100')}
+          </div>
+          <div class="mt-3">
+            ${inputEdit('Ponto de Referência', 'edit-referencia', 'text', u.pontoReferencia || '', 'Em frente à padaria, portão azul')}
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h3 class="font-bold text-gray-500 text-xs uppercase tracking-wider mb-4">⚙️ Preferências</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Preferência Alimentar</label>
+              <select id="edit-preferencia" class="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none bg-white">
+                ${['Sem restrições','Vegetariano','Vegano','Sem lactose','Sem glúten'].map(op =>
+                  `<option value="${op}" ${(u.preferenciaAlimentar||'Sem restrições') === op ? 'selected':''}>
+                    ${{Vegetariano:'🥗',Vegano:'🌱','Sem lactose':'🥛','Sem glúten':'🌾','Sem restrições':''}[op]||''} ${op}
+                  </option>`).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Pagamento Preferido</label>
+              <select id="edit-pagamento" class="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none bg-white">
+                ${['PIX','Cartão de Crédito','Cartão de Débito','Dinheiro'].map(op =>
+                  `<option value="${op}" ${(u.pagamentoPreferido||'PIX') === op ? 'selected':''}>${op}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button type="button" onclick="window.abrirPerfil()"
+            class="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl text-sm transition">
+            ← Cancelar
+          </button>
+          <button type="submit"
+            class="w-2/3 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl text-sm transition shadow flex items-center justify-center gap-2">
+            💾 Salvar Alterações
+          </button>
+        </div>
+
+      </form>
+    </div>
+  `;
+
+  document.getElementById('form-editar-perfil')?.addEventListener('submit', (evt) => {
+    evt.preventDefault();
+
+    const rua       = document.getElementById('edit-rua')?.value.trim() || '';
+    const numero    = document.getElementById('edit-numero')?.value.trim() || '';
+    const complemento = document.getElementById('edit-complemento')?.value.trim() || '';
+    const bairro    = document.getElementById('edit-bairro')?.value.trim() || '';
+    const cidade    = document.getElementById('edit-cidade')?.value.trim() || '';
+    const cep       = document.getElementById('edit-cep')?.value.trim() || '';
+    const novaSenha = document.getElementById('edit-senha')?.value || '';
+
+    const dados = {
+      nome:      document.getElementById('edit-nome')?.value.trim() || '',
+      email:     document.getElementById('edit-email')?.value.trim() || '',
+      idade:     document.getElementById('edit-idade')?.value.trim() || '',
+      telefone:  document.getElementById('edit-telefone')?.value.trim() || '',
+      senha:     novaSenha,
+      rua, numero, bairro, cidade,
+    };
+
+    const validacao = validarAtualizacaoPerfil(dados);
+    if (!validacao.valido) { alert(validacao.erro); return; }
+
+    try {
+      atualizarUsuario({
+        nome: dados.nome,
+        email: dados.email,
+        idade: Number(dados.idade),
+        telefone: dados.telefone,
+        senha: dados.senha,
+        endereco: formatarEnderecoCompleto({ rua, numero, complemento, bairro, cidade, cep }),
+        enderecoDetalhes: { rua, numero, complemento, bairro, cidade, cep },
+        pontoReferencia: document.getElementById('edit-referencia')?.value.trim() || '',
+        preferenciaAlimentar: document.getElementById('edit-preferencia')?.value || 'Sem restrições',
+        pagamentoPreferido: document.getElementById('edit-pagamento')?.value || 'PIX',
+      });
+
+      alert('✅ Perfil atualizado com sucesso!');
+      if (typeof window.atualizarNavegacaoGlobal === 'function') window.atualizarNavegacaoGlobal();
+      window.abrirPerfil();
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+}
+
+function inputEdit(label, id, type, value, placeholder) {
+  return `
+    <div>
+      <label class="block text-xs font-semibold text-gray-700 mb-1">${label}</label>
+      <input type="${type}" id="${id}" value="${String(value).replace(/"/g, '&quot;')}"
+        placeholder="${placeholder}"
+        class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none transition" />
+    </div>
+  `;
+}

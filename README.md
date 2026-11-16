@@ -41,13 +41,15 @@ https://admirable-quokka-46ca6a.netlify.app/
 
 ## Testes automatizados
 
-O projeto possui testes automatizados para as regras de validação do checkout e para a ferramenta de busca de restaurantes e pratos.
+O projeto possui testes automatizados para as regras de validação do checkout, para a ferramenta de busca de restaurantes e pratos, e para o cadastro de usuários em etapas.
 
 Para executar:
 
 ```bash
 node tests/checkout-validation.test.js
 node tests/search.test.js
+node tests/register-validation.test.js
+node tests/profile-validation.test.js
 ```
 
 Os testes de checkout verificam:
@@ -69,7 +71,25 @@ Os testes da ferramenta de busca verificam:
 - retorno simultâneo de restaurantes e pratos quando ambos correspondem ao termo;
 - localização de pratos por ID para adição direta ao carrinho.
 
-Resultado atual: **18 testes executados com sucesso** (5 de checkout + 13 de busca).
+Os testes de validação de cadastro em etapas verificam:
+
+- validação de nome, e-mail e senha na Etapa 1;
+- validação de idade mínima e máxima permitida na Etapa 2;
+- obrigatoriedade do telefone/WhatsApp para contato na entrega;
+- validação de endereço completo (rua, número, bairro e cidade);
+- formatação padronizada do endereço de entrega.
+
+Os testes de validação do perfil de usuário verificam:
+
+- rejeição de nome com menos de 3 caracteres;
+- rejeição de e-mail inválido;
+- senha opcional: vazia é aceita, mas < 4 caracteres retorna erro;
+- rejeição de idade abaixo de 12 ou acima de 120;
+- rejeição de telefone com menos de 8 dígitos;
+- rejeição de rua, número, bairro ou cidade ausentes;
+- formatação padronizada do endereço completo com e sem complemento.
+
+Resultado atual: **51 testes executados com sucesso** (5 de checkout + 13 de busca + 13 de cadastro em etapas + 20 de perfil de usuário).
 
 ## Especificações
 
@@ -81,6 +101,8 @@ Atualmente estão documentadas:
 - `2026-10-06-validacao-checkout.md`
 - `2026-10-06-cardapio-visual.md`
 - `2026-11-15-ferramenta-busca.md`
+- `2026-11-15-cadastro-usuario-etapas.md`
+- `2026-11-16-perfil-e-edicao-usuario.md`
 
 A especificação de validação do checkout foi versionada antes da implementação e dos respectivos testes.
 

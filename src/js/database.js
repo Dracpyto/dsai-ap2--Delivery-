@@ -25041,3 +25041,52 @@ export function sairUsuario() {
   usuarioLogado = null;
   localStorage.removeItem('df_usuario_logado');
 }
+
+
+// ======================================================
+// ATUALIZAR USUÁRIO NO BANCO DE DADOS LOCAL
+// ======================================================
+
+/**
+ * Atualiza os dados do usuário logado no localStorage.
+ * @param {Object} dadosAtualizados - Campos novos a mesclar no perfil atual.
+ * @returns {Object} Usuário atualizado.
+ */
+export function atualizarUsuario(dadosAtualizados) {
+  if (!usuarioLogado) throw new Error('Nenhum usuário está logado.');
+
+  // Verifica conflito de e-mail com outro usuário
+  if (dadosAtualizados.email) {
+    const conflito = usuarios.find(
+      (u) => u.email.toLowerCase() === dadosAtualizados.email.toLowerCase() && u.id !== usuarioLogado.id
+    );
+    if (conflito) {
+      throw new Error('Este e-mail já está sendo usado por outro cadastro.');
+    }
+  }
+
+  // Mescla os novos dados sobre o perfil atual
+  const usuarioAtualizado = {
+    ...usuarioLogado,
+    ...dadosAtualizados,
+    ultimaAtualizacao: new Date().toLocaleString('pt-BR')
+  };
+
+  // Se a nova senha veio em branco, preserva a anterior
+  if (!dadosAtualizados.senha || dadosAtualizados.senha.trim() === '') {
+    usuarioAtualizado.senha = usuarioLogado.senha;
+  }
+
+  // Atualiza na lista de usuários
+  const idx = usuarios.findIndex((u) => u.id === usuarioLogado.id);
+  if (idx !== -1) {
+    usuarios[idx] = usuarioAtualizado;
+  }
+
+  usuarioLogado = usuarioAtualizado;
+
+  localStorage.setItem('df_usuarios', JSON.stringify(usuarios));
+  localStorage.setItem('df_usuario_logado', JSON.stringify(usuarioLogado));
+
+  return usuarioAtualizado;
+}
