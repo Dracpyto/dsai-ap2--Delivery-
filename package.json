@@ -1,0 +1,10 @@
+{
+  "name": "deliveryfast",
+  "version": "1.0.0",
+  "description": "Aplicativo web de delivery de comida — DeliveryFast",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/checkout-validation.test.js && node tests/search.test.js && node tests/register-validation.test.js && node tests/profile-validation.test.js"
+  }
+}
