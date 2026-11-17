@@ -5,6 +5,10 @@ import { menusData } from './components/menu.js';
 import { buscar } from './js/search.js';
 import { renderResultadosBusca } from './components/search.js';
 import { obterUsuarioLogado, sairUsuario } from './js/database.js';
+import { abrirCarrinhoWidget } from './components/cart.js';
+
+// Expõe o botão do carrinho no header
+window.abrirCarrinho = abrirCarrinhoWidget;
 
 // Atualiza a área do utilizador na barra de navegação
 export function atualizarNavegacao() {

@@ -20162,3 +20162,43 @@ if (typeof window.adicionarPedidoAoHistorico === 'function') {
   atualizarContadorCarrinho();
   renderCarrinho();
 };
+
+// Abre/destaca o widget do carrinho ao clicar no ícone do header
+export function abrirCarrinhoWidget() {
+  let container = document.getElementById('cart-floating-widget');
+
+  // Se o carrinho tiver itens, o widget já existe — só destaca com animação
+  if (carrinho.length > 0 && container) {
+    container.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    // Animação de pulso para chamar atenção
+    container.style.transition = 'transform 0.15s ease';
+    container.style.transform = 'scale(1.04)';
+    setTimeout(() => { container.style.transform = 'scale(1)'; }, 200);
+    setTimeout(() => { container.style.transform = 'scale(1.04)'; }, 350);
+    setTimeout(() => { container.style.transform = 'scale(1)'; }, 500);
+    return;
+  }
+
+  // Se o carrinho estiver vazio, cria/garante o container e mostra mensagem temporária
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'cart-floating-widget';
+    container.className = 'fixed bottom-6 right-6 z-50 w-80 sm:w-96 shadow-2xl rounded-xl overflow-hidden transition-all';
+    document.body.appendChild(container);
+  }
+
+  container.innerHTML = `
+    <div class="bg-white border border-gray-200 p-5 rounded-xl shadow-lg text-center">
+      <div class="text-4xl mb-2">🛒</div>
+      <p class="text-gray-700 font-semibold text-sm">Seu carrinho está vazio</p>
+      <p class="text-gray-400 text-xs mt-1">Adicione itens do cardápio para começar!</p>
+    </div>
+  `;
+
+  // Oculta automaticamente após 2,5 segundos
+  setTimeout(() => {
+    if (carrinho.length === 0) container.innerHTML = '';
+  }, 2500);
+}
+
+window.abrirCarrinho = abrirCarrinhoWidget;
