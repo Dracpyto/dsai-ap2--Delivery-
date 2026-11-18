@@ -20000,8 +20000,15 @@ export function renderModule_cart_3999() {
 
 
 import { obterUsuarioLogado } from '../js/database.js';
+import { escaparHtml } from '../js/security.js';
 
 let carrinho = [];
+
+export function limparCarrinho() {
+  carrinho = [];
+  atualizarContadorCarrinho();
+  renderCarrinho();
+}
 
 export function adicionarAoCarrinho(item) {
   const itemExistente = carrinho.find(cartItem => cartItem.id === item.id);
@@ -20065,8 +20072,8 @@ export function renderCarrinho() {
   const itensHtml = carrinho.map(item => `
     <div class="flex justify-between items-center py-2 border-b border-gray-100 text-sm">
       <div class="truncate max-w-[160px]">
-        <h5 class="font-semibold text-gray-800 truncate">${item.name}</h5>
-        <span class="text-xs text-gray-500">R$ ${item.price.toFixed(2).replace('.', ',')}</span>
+        <h5 class="font-semibold text-gray-800 truncate">${escaparHtml(item.name)}</h5>
+        <span class="text-xs text-gray-500">R$ ${Number(item.price).toFixed(2).replace('.', ',')}</span>
       </div>
       <div class="flex items-center gap-2">
         <div class="flex items-center border border-gray-200 rounded">
@@ -20152,7 +20159,9 @@ if (typeof window.adicionarPedidoAoHistorico === 'function') {
     carrinho,
     total,
     pedido.nome,
-    pedido.endereco
+    pedido.endereco,
+    usuario.id,
+    usuario.email
   );
 }
 

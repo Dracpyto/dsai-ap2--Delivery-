@@ -5,7 +5,8 @@ import { menusData } from './components/menu.js';
 import { buscar } from './js/search.js';
 import { renderResultadosBusca } from './components/search.js';
 import { obterUsuarioLogado, sairUsuario } from './js/database.js';
-import { abrirCarrinhoWidget } from './components/cart.js';
+import { abrirCarrinhoWidget, limparCarrinho } from './components/cart.js';
+import { escaparHtml } from './js/security.js';
 
 // Expõe o botão do carrinho no header
 window.abrirCarrinho = abrirCarrinhoWidget;
@@ -17,17 +18,21 @@ export function atualizarNavegacao() {
 
   if (areaUsuario) {
     if (usuario) {
+      const nomeSeguro = escaparHtml(usuario.nome || '');
+      const primeiroNomeSeguro = escaparHtml((usuario.nome || '').split(' ')[0]);
+      const inicialSegura = escaparHtml((usuario.nome || '').charAt(0).toUpperCase());
+
       areaUsuario.innerHTML = `
         <div class="flex items-center gap-3">
           <button
             onclick="window.abrirPerfil()"
+            title="${nomeSeguro}"
             class="flex items-center gap-2 text-gray-800 font-semibold bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-full border border-gray-200 transition"
-            title="Ver meu perfil"
           >
             <span class="w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center font-bold text-sm">
-              ${usuario.nome.charAt(0).toUpperCase()}
+              ${inicialSegura}
             </span>
-            <span class="text-sm">Olá, ${usuario.nome.split(' ')[0]}</span>
+            <span class="text-sm">Olá, ${primeiroNomeSeguro}</span>
           </button>
 
           <button onclick="window.sairDaConta()" class="text-sm text-red-600 hover:underline font-medium">
@@ -109,6 +114,7 @@ window.voltarParaRestaurantes = () => {
 
 window.sairDaConta = () => {
   sairUsuario();
+  limparCarrinho();
   atualizarNavegacao();
   renderRestaurantes();
   alert('Você saiu da conta. Agora outro usuário pode se cadastrar.');

@@ -1,4 +1,5 @@
 import { renderCarrinho } from './cart.js';
+import { escaparHtml } from '../js/security.js';
 
 /**
  * Renderiza os resultados da busca na tela principal (#app).
@@ -15,6 +16,8 @@ export function renderResultadosBusca(termo, resultados) {
   if (btnInicio) {
     btnInicio.classList.remove('hidden');
   }
+
+  const termoSeguro = escaparHtml(termo || '');
 
   // Caso não encontre nenhum restaurante e nenhum prato
   if (!resultados || !resultados.encontrado) {
@@ -38,7 +41,7 @@ export function renderResultadosBusca(termo, resultados) {
 
           <p class="text-gray-500 mb-6 text-sm leading-relaxed">
             Não encontramos nenhum restaurante ou prato correspondente a 
-            <span class="font-semibold text-gray-800">"${termo || ''}"</span> na aplicação.
+            <span class="font-semibold text-gray-800">"${termoSeguro}"</span> na aplicação.
           </p>
 
           <div class="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-100">
@@ -187,7 +190,7 @@ export function renderResultadosBusca(termo, resultados) {
     <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-200">
       <div>
         <h2 class="text-2xl font-bold text-gray-900">
-          Resultados para "${termo}"
+          Resultados para "${termoSeguro}"
         </h2>
         <p class="text-gray-500 text-sm mt-1">
           ${resultados.totalResultados} ${resultados.totalResultados === 1 ? 'item encontrado' : 'itens encontrados'}

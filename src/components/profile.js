@@ -19998,6 +19998,7 @@ export function renderModule_profile_3999() {
 
 import { obterUsuarioLogado, atualizarUsuario } from '../js/database.js';
 import { validarAtualizacaoPerfil, formatarEnderecoCompleto } from '../js/register-validation.js';
+import { escaparHtml } from '../js/security.js';
 
 // ======================================================
 // TELA DE PERFIL — VISUALIZAÇÃO
@@ -20044,17 +20045,17 @@ export function renderPerfil() {
 
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-5 flex flex-col sm:flex-row items-center sm:items-start gap-5">
         <div class="flex-shrink-0 w-20 h-20 rounded-full bg-red-600 text-white flex items-center justify-center text-3xl font-bold shadow-md">
-          ${iniciais}
+          ${escaparHtml(iniciais)}
         </div>
         <div class="flex-1 text-center sm:text-left">
-          <h2 class="text-2xl font-bold text-gray-900">${usuario.nome}</h2>
-          <p class="text-gray-500 text-sm mt-0.5">${usuario.email}</p>
+          <h2 class="text-2xl font-bold text-gray-900">${escaparHtml(usuario.nome)}</h2>
+          <p class="text-gray-500 text-sm mt-0.5">${escaparHtml(usuario.email)}</p>
           <div class="flex flex-wrap justify-center sm:justify-start gap-2 mt-2">
             <span class="bg-green-100 text-green-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">✅ Cliente Ativo</span>
             ${usuario.preferenciaAlimentar && usuario.preferenciaAlimentar !== 'Sem restrições'
-              ? `<span class="bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">🥗 ${usuario.preferenciaAlimentar}</span>` : ''}
+              ? `<span class="bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">🥗 ${escaparHtml(usuario.preferenciaAlimentar)}</span>` : ''}
             ${usuario.pagamentoPreferido
-              ? `<span class="bg-yellow-100 text-yellow-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">💳 ${usuario.pagamentoPreferido}</span>` : ''}
+              ? `<span class="bg-yellow-100 text-yellow-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">💳 ${escaparHtml(usuario.pagamentoPreferido)}</span>` : ''}
           </div>
         </div>
         <button onclick="window.abrirEdicaoPerfil()"
@@ -20076,7 +20077,7 @@ export function renderPerfil() {
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-5">
         <h3 class="font-bold text-gray-500 text-xs uppercase tracking-wider mb-4">📍 Endereço de Entrega</h3>
         <div class="bg-red-50 border border-red-100 rounded-xl p-3.5 mb-4 text-sm text-red-800 font-medium flex items-start gap-2">
-          <span>📌</span><span>${enderecoFormatado}</span>
+          <span>📌</span><span>${escaparHtml(enderecoFormatado)}</span>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           ${itemPerfil('Rua / Logradouro', endDet.rua || '—')}
@@ -20088,7 +20089,7 @@ export function renderPerfil() {
         </div>
         ${usuario.pontoReferencia ? `
         <div class="mt-3 text-sm text-gray-600 bg-gray-50 rounded-xl p-3 border border-gray-100">
-          <span class="font-semibold">Ponto de referência:</span> ${usuario.pontoReferencia}
+          <span class="font-semibold">Ponto de referência:</span> ${escaparHtml(usuario.pontoReferencia)}
         </div>` : ''}
       </div>
 
@@ -20126,8 +20127,8 @@ export function renderPerfil() {
 function itemPerfil(label, valor) {
   return `
     <div class="bg-gray-50 rounded-lg px-3.5 py-2.5 border border-gray-100">
-      <span class="block text-xs text-gray-400 font-medium mb-0.5">${label}</span>
-      <span class="text-gray-800 font-semibold">${valor}</span>
+      <span class="block text-xs text-gray-400 font-medium mb-0.5">${escaparHtml(label)}</span>
+      <span class="text-gray-800 font-semibold">${escaparHtml(valor)}</span>
     </div>
   `;
 }
@@ -20274,9 +20275,9 @@ export function renderEdicaoPerfil() {
 function inputEdit(label, id, type, value, placeholder) {
   return `
     <div>
-      <label class="block text-xs font-semibold text-gray-700 mb-1">${label}</label>
-      <input type="${type}" id="${id}" value="${String(value).replace(/"/g, '&quot;')}"
-        placeholder="${placeholder}"
+      <label class="block text-xs font-semibold text-gray-700 mb-1">${escaparHtml(label)}</label>
+      <input type="${type}" id="${id}" value="${escaparHtml(value)}"
+        placeholder="${escaparHtml(placeholder)}"
         class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none transition" />
     </div>
   `;

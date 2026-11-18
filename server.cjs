@@ -18,13 +18,21 @@ const MIME_TYPES = {
 };
 
 function handleRequest(req, res) {
-  let reqPath = req.url.split('?')[0];
-  if (reqPath === '/') reqPath = '/index.html';
-  const filePath = path.join(BASE_DIR, reqPath);
+  let reqPath = '/';
+  try {
+    reqPath = decodeURIComponent(req.url.split('?')[0]);
+  } catch {
+    res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+    return res.end('Requisição inválida');
+  }
 
-  // Segurança simples para evitar navegação fora da pasta src
-  if (!filePath.startsWith(BASE_DIR)) {
-    res.writeHead(403);
+  if (reqPath === '/') reqPath = '/index.html';
+  const baseResolvido = path.resolve(BASE_DIR);
+  const filePath = path.resolve(BASE_DIR, '.' + reqPath);
+
+  // RF-07: Proteção contra Path Traversal garantindo que o arquivo pertença estritamente a BASE_DIR
+  if (filePath !== baseResolvido && !filePath.startsWith(baseResolvido + path.sep)) {
+    res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
     return res.end('Acesso negado');
   }
 
