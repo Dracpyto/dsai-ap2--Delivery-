@@ -19996,6 +19996,9 @@ export function renderModule_orders_3999() {
 
 
 
+import { obterUsuarioLogado } from '../js/database.js';
+import { escaparHtml, filtrarPedidosPorUsuario } from '../js/security.js';
+
 // Recupera os pedidos salvos no localStorage ou inicia vazio
 let historicoPedidos = JSON.parse(localStorage.getItem('deliveryfast_pedidos')) || [];
 
@@ -20013,8 +20016,15 @@ function calcularStatus(dataCriacaoTimestamp) {
   }
 }
 
-export function adicionarPedidoAoHistorico(itensCarrinho, total, nome, endereco) {
+export function adicionarPedidoAoHistorico(itensCarrinho, total, nome, endereco, usuarioId, usuarioEmail) {
   const agora = Date.now();
+  const usuarioAtual = obterUsuarioLogado();
+  const idProprietario = usuarioId !== undefined && usuarioId !== null
+    ? usuarioId
+    : (usuarioAtual ? usuarioAtual.id : null);
+  const emailProprietario = usuarioEmail !== undefined && usuarioEmail !== null
+    ? usuarioEmail
+    : (usuarioAtual ? usuarioAtual.email : '');
 
   const novoPedido = {
     id: `PED-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -20023,6 +20033,8 @@ export function adicionarPedidoAoHistorico(itensCarrinho, total, nome, endereco)
       dateStyle: 'short',
       timeStyle: 'short'
     }),
+    usuarioId: idProprietario,
+    usuarioEmail: emailProprietario,
     itens: [...itensCarrinho],
     total: total,
     nome: nome || '',
@@ -20052,10 +20064,28 @@ export function renderPedidos() {
     widgetCarrinho.innerHTML = '';
   }
 
-  // Atualiza a lista lendo novamente do localStorage
-  historicoPedidos = JSON.parse(localStorage.getItem('deliveryfast_pedidos')) || [];
+  const usuarioLogado = obterUsuarioLogado();
 
-  if (historicoPedidos.length === 0) {
+  // RF-05 / RN-03: Visitantes não autenticados não podem visualizar pedidos armazenados no navegador
+  if (!usuarioLogado) {
+    container.innerHTML = `
+      <h2 class="text-2xl font-bold mb-6 text-gray-800">Meus Pedidos</h2>
+      <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-100 text-center text-gray-500">
+        <p class="text-xl font-medium mb-2 text-gray-800">🔒 Acesso restrito aos seus pedidos</p>
+        <p class="text-sm text-gray-500 mb-6">Crie uma conta ou identifique-se para visualizar exclusivamente o seu histórico de pedidos.</p>
+        <button onclick="window.abrirTelaCadastro()" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2.5 rounded-xl transition">
+          Criar Conta
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  // Atualiza a lista lendo novamente do localStorage e filtra apenas os pedidos do usuário logado (RF-05 / RN-02)
+  historicoPedidos = JSON.parse(localStorage.getItem('deliveryfast_pedidos')) || [];
+  const pedidosDoUsuario = filtrarPedidosPorUsuario(historicoPedidos, usuarioLogado);
+
+  if (pedidosDoUsuario.length === 0) {
     container.innerHTML = `
       <h2 class="text-2xl font-bold mb-6 text-gray-800">Meus Pedidos</h2>
       <div class="bg-white p-8 rounded-lg shadow-sm border border-gray-100 text-center text-gray-500">
@@ -20066,15 +20096,15 @@ export function renderPedidos() {
     return;
   }
 
-   const listaPedidosHtml = historicoPedidos.map(pedido => {
+   const listaPedidosHtml = pedidosDoUsuario.map(pedido => {
     // Se o pedido antigo não tiver timestamp, usa o momento atual para evitar erros
     const timestamp = pedido.timestamp || Date.now();
     const infoStatus = calcularStatus(timestamp);
 
-    const itensHtml = pedido.itens.map(item => `
+    const itensHtml = (pedido.itens || []).map(item => `
       <div class="flex justify-between text-sm py-1 border-b border-gray-50 last:border-none">
-        <span class="text-gray-700">${item.quantidade}x ${item.name}</span>
-        <span class="text-gray-500 font-medium">R$ ${(item.price * item.quantidade).toFixed(2).replace('.', ',')}</span>
+        <span class="text-gray-700">${Number(item.quantidade) || 0}x ${escaparHtml(item.name)}</span>
+        <span class="text-gray-500 font-medium">R$ ${(Number(item.price) * Number(item.quantidade)).toFixed(2).replace('.', ',')}</span>
       </div>
     `).join('');
 
@@ -20082,17 +20112,17 @@ export function renderPedidos() {
       <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 mb-4 transition-all">
         <div class="flex flex-wrap justify-between items-center pb-3 border-b mb-3 gap-2">
           <div>
-            <span class="font-bold text-gray-900 text-lg">${pedido.id}</span>
-            <span class="text-xs text-gray-400 ml-2">• ${pedido.data}</span>
+            <span class="font-bold text-gray-900 text-lg">${escaparHtml(pedido.id)}</span>
+            <span class="text-xs text-gray-400 ml-2">• ${escaparHtml(pedido.data)}</span>
           </div>
           <span class="text-xs font-bold px-3 py-1 rounded-full transition-colors ${infoStatus.color}">
-            ${infoStatus.status}
+            ${escaparHtml(infoStatus.status)}
           </span>
         </div>
                 ${pedido.nome ? `
           <div class="mb-3 text-sm text-gray-600">
-            <p><strong>Cliente:</strong> ${pedido.nome}</p>
-            <p><strong>Endereço:</strong> ${pedido.endereco}</p>
+            <p><strong>Cliente:</strong> ${escaparHtml(pedido.nome)}</p>
+            <p><strong>Endereço:</strong> ${escaparHtml(pedido.endereco)}</p>
           </div>
         ` : ''}
 
@@ -20102,7 +20132,7 @@ export function renderPedidos() {
 
         <div class="flex justify-between items-center pt-3 border-t">
           <span class="text-gray-600 font-medium">Total do Pedido:</span>
-          <span class="text-lg font-bold text-red-600">R$ ${pedido.total.toFixed(2).replace('.', ',')}</span>
+          <span class="text-lg font-bold text-red-600">R$ ${Number(pedido.total).toFixed(2).replace('.', ',')}</span>
         </div>
       </div>
     `;

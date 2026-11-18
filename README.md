@@ -50,6 +50,7 @@ node tests/checkout-validation.test.js
 node tests/search.test.js
 node tests/register-validation.test.js
 node tests/profile-validation.test.js
+node tests/security.test.js
 ```
 
 Os testes de checkout verificam:
@@ -89,7 +90,17 @@ Os testes de validação do perfil de usuário verificam:
 - rejeição de rua, número, bairro ou cidade ausentes;
 - formatação padronizada do endereço completo com e sem complemento.
 
-Resultado atual: **51 testes executados com sucesso** (5 de checkout + 13 de busca + 13 de cadastro em etapas + 20 de perfil de usuário).
+Resultado atual: **71 testes executados com sucesso** (5 de checkout + 13 de busca + 13 de cadastro em etapas + 20 de perfil de usuário + 20 de segurança e proteção de dados).
+
+## Segurança e Limitações Conhecidas (Arquitetura Frontend / `localStorage`)
+
+A aplicação implementa medidas de proteção e higiene de dados no cliente conforme a especificação `SPEC/2026-11-17-seguranca-protecao-dados.md`:
+
+- **Senhas com hash (SHA-256 + salt):** As senhas não são salvas em texto puro em `df_usuarios`, e o objeto de sessão ativa (`df_usuario_logado`) não armazena `senha` nem `senhaHash`.
+- **Prevenção contra XSS:** Entradas de usuários e dados lidos do `localStorage` passam por escape de entidades HTML (`escaparHtml`) antes de serem renderizados via `innerHTML`.
+- **Isolamento de pedidos na interface:** Todo pedido é vinculado ao `usuarioId` do autor e a tela `"Meus Pedidos"` exibe exclusivamente os pedidos da conta logada (bloqueando a visualização para visitantes deslogados ou outros usuários).
+
+> **Limitação arquitetural importante:** Como o DeliveryFast é uma aplicação puramente frontend sem servidor backend e utiliza `window.localStorage` para persistência no navegador, **essas medidas não equivalem a segurança em nível de produção contra acesso físico/local ao DevTools**. Qualquer pessoa com acesso direto às ferramentas de desenvolvedor do navegador pode inspecionar ou modificar manualmente as chaves do `localStorage`. O isolamento multiusuário inviolável e a proteção criptográfica definitiva de credenciais exigiriam um backend dedicado com banco de dados e autenticação no servidor.
 
 ## Especificações
 
@@ -103,6 +114,8 @@ Atualmente estão documentadas:
 - `2026-11-15-ferramenta-busca.md`
 - `2026-11-15-cadastro-usuario-etapas.md`
 - `2026-11-16-perfil-e-edicao-usuario.md`
+- `2026-11-17-pagina-carrinho.md`
+- `2026-11-17-seguranca-protecao-dados.md`
 
 A especificação de validação do checkout foi versionada antes da implementação e dos respectivos testes.
 

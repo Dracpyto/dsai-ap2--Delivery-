@@ -1,5 +1,6 @@
 import { cadastrarUsuario, usuarios } from '../js/database.js';
 import { validarEtapa1, validarEtapa2, formatarEnderecoCompleto } from '../js/register-validation.js';
+import { escaparHtml } from '../js/security.js';
 
 let dadosCadastro = {
   nome: '',
@@ -65,7 +66,7 @@ function renderEtapa1Html() {
           <input
             type="text"
             id="reg-nome"
-            value="${dadosCadastro.nome || ''}"
+            value="${escaparHtml(dadosCadastro.nome || '')}"
             required
             class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition text-sm"
             placeholder="Ex: Maria dos Santos"
@@ -77,7 +78,7 @@ function renderEtapa1Html() {
           <input
             type="email"
             id="reg-email"
-            value="${dadosCadastro.email || ''}"
+            value="${escaparHtml(dadosCadastro.email || '')}"
             required
             class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition text-sm"
             placeholder="seu@email.com"
@@ -89,7 +90,7 @@ function renderEtapa1Html() {
           <input
             type="password"
             id="reg-senha"
-            value="${dadosCadastro.senha || ''}"
+            value="${escaparHtml(dadosCadastro.senha || '')}"
             required
             minlength="4"
             class="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 transition text-sm"
@@ -117,7 +118,7 @@ function renderEtapa1Html() {
  * HTML da Etapa 2: Idade, Endereço onde mora, Telefone e preferências de delivery.
  */
 function renderEtapa2Html() {
-  const primeiroNome = (dadosCadastro.nome || 'Cliente').split(' ')[0];
+  const primeiroNome = escaparHtml((dadosCadastro.nome || 'Cliente').split(' ')[0]);
 
   return `
     <div>
@@ -135,7 +136,7 @@ function renderEtapa2Html() {
             <input
               type="text"
               id="reg-nome-confirm"
-              value="${dadosCadastro.nome || ''}"
+              value="${escaparHtml(dadosCadastro.nome || '')}"
               required
               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
             />
@@ -145,7 +146,7 @@ function renderEtapa2Html() {
             <input
               type="number"
               id="reg-idade"
-              value="${dadosCadastro.idade || ''}"
+              value="${escaparHtml(dadosCadastro.idade || '')}"
               min="12"
               max="120"
               required
@@ -161,7 +162,7 @@ function renderEtapa2Html() {
           <input
             type="tel"
             id="reg-telefone"
-            value="${dadosCadastro.telefone || ''}"
+            value="${escaparHtml(dadosCadastro.telefone || '')}"
             required
             placeholder="Ex: (11) 98765-4321"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
@@ -181,7 +182,7 @@ function renderEtapa2Html() {
             <input
               type="text"
               id="reg-rua"
-              value="${dadosCadastro.rua || ''}"
+              value="${escaparHtml(dadosCadastro.rua || '')}"
               required
               placeholder="Ex: Av. Paulista"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
@@ -192,7 +193,7 @@ function renderEtapa2Html() {
             <input
               type="text"
               id="reg-numero"
-              value="${dadosCadastro.numero || ''}"
+              value="${escaparHtml(dadosCadastro.numero || '')}"
               required
               placeholder="123"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
@@ -207,7 +208,7 @@ function renderEtapa2Html() {
             <input
               type="text"
               id="reg-complemento"
-              value="${dadosCadastro.complemento || ''}"
+              value="${escaparHtml(dadosCadastro.complemento || '')}"
               placeholder="Apto 42, Bloco B"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
             />
@@ -217,7 +218,7 @@ function renderEtapa2Html() {
             <input
               type="text"
               id="reg-bairro"
-              value="${dadosCadastro.bairro || ''}"
+              value="${escaparHtml(dadosCadastro.bairro || '')}"
               required
               placeholder="Ex: Bela Vista"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
@@ -232,7 +233,7 @@ function renderEtapa2Html() {
             <input
               type="text"
               id="reg-cidade"
-              value="${dadosCadastro.cidade || ''}"
+              value="${escaparHtml(dadosCadastro.cidade || '')}"
               required
               placeholder="Ex: São Paulo - SP"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
@@ -243,7 +244,7 @@ function renderEtapa2Html() {
             <input
               type="text"
               id="reg-cep"
-              value="${dadosCadastro.cep || ''}"
+              value="${escaparHtml(dadosCadastro.cep || '')}"
               placeholder="01310-100"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
             />
@@ -256,7 +257,7 @@ function renderEtapa2Html() {
           <input
             type="text"
             id="reg-referencia"
-            value="${dadosCadastro.referencia || ''}"
+            value="${escaparHtml(dadosCadastro.referencia || '')}"
             placeholder="Ex: Em frente à farmácia, interfone 42"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:outline-none"
           />

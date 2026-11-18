@@ -4,8 +4,8 @@
 - **Arquivo:** `SPEC/2026-11-17-seguranca-protecao-dados.md`
 - **Data da especificação:** 2026-11-17
 - **Referência de origem:** [Issue #1 — Primeiras impressões: Auditoria técnica e alinhamento com os autores originais](https://github.com/Dracpyto/dsai-ap2--Delivery-/issues/1)
-- **Estado do repositório verificado em:** commit `d2d16b5` (após integração do commit `dacf0c7`)
-- **Status:** Especificada (aguardando validação/implementação)
+- **Estado do repositório verificado em:** commit `d2d16b5` (após integração do commit `dacf0c7`) e revalidado em `214fe19`
+- **Status:** Implementada na branch `feature/protecao-dados` (todos os critérios `CA-01` a `CA-07` atendidos)
 
 ---
 
@@ -200,16 +200,16 @@ Esta especificação registra explicitamente que, por requisito arquitetural do 
 
 ## 10. Critérios de aceitação verificáveis
 
-- [ ] **CA-01 (Sem senha em claro):** Após cadastrar um usuário com senha `"MinhaSenha123"`, inspecionar `localStorage.getItem('df_usuarios')` e `localStorage.getItem('df_usuario_logado')` e comprovar que a substring `"MinhaSenha123"` **não existe** em nenhuma das chaves, e que `df_usuario_logado` não possui os campos `senha` nem `senhaHash`.
-- [ ] **CA-02 (Sem vazamento no console):** Realizar o cadastro de um usuário e verificar que nenhuma chamada a `console.log` imprime o objeto do usuário ou sua senha.
-- [ ] **CA-03 (Bloqueio de XSS no histórico de pedidos):** Cadastrar um pedido com o endereço `<img src=x onerror="window.__xss=1">` e abrir a tela `"Meus Pedidos"`. Comprovar que `window.__xss` permanece `undefined`, nenhuma requisição para `/x` é disparada e o texto `<img src=x onerror="window.__xss=1">` aparece literalmente renderizado como texto na tela.
-- [ ] **CA-04 (Bloqueio de XSS no cabeçalho e na busca):** Cadastrar um usuário com nome `<svg/onload="window.__xssNome=1">` e pesquisar por `<script>window.__xssBusca=1</script>`. Comprovar que nenhum script é executado e que ambos os textos são exibidos escapados.
-- [ ] **CA-05 (Isolamento de pedidos entre usuários na UI):**
+- [x] **CA-01 (Sem senha em claro):** Após cadastrar um usuário com senha `"MinhaSenha123"`, inspecionar `localStorage.getItem('df_usuarios')` e `localStorage.getItem('df_usuario_logado')` e comprovar que a substring `"MinhaSenha123"` **não existe** em nenhuma das chaves, e que `df_usuario_logado` não possui os campos `senha` nem `senhaHash`.
+- [x] **CA-02 (Sem vazamento no console):** Realizar o cadastro de um usuário e verificar que nenhuma chamada a `console.log` imprime o objeto do usuário ou sua senha.
+- [x] **CA-03 (Bloqueio de XSS no histórico de pedidos):** Cadastrar um pedido com o endereço `<img src=x onerror="window.__xss=1">` e abrir a tela `"Meus Pedidos"`. Comprovar que `window.__xss` permanece `undefined`, nenhuma requisição para `/x` é disparada e o texto `<img src=x onerror="window.__xss=1">` aparece literalmente renderizado como texto na tela.
+- [x] **CA-04 (Bloqueio de XSS no cabeçalho e na busca):** Cadastrar um usuário com nome `<svg/onload="window.__xssNome=1">` e pesquisar por `<script>window.__xssBusca=1</script>`. Comprovar que nenhum script é executado e que ambos os textos são exibidos escapados.
+- [x] **CA-05 (Isolamento de pedidos entre usuários na UI):**
   1. Cadastrar o `Usuário A`, realizar 1 pedido e clicar em `"Sair"`.
   2. Abrir `"Meus Pedidos"` deslogado e comprovar que o pedido do `Usuário A` **não é exibido**.
   3. Cadastrar o `Usuário B`, abrir `"Meus Pedidos"` e comprovar que a lista exibe `"Você ainda não fez nenhum pedido"`, sem mostrar o nome ou endereço do `Usuário A`.
-- [ ] **CA-06 (Persistência de `usuarioId` no pedido):** Verificar no JSON de `deliveryfast_pedidos` que todo novo pedido contém a propriedade `usuarioId` igual ao `id` do usuário que o finalizou.
-- [ ] **CA-07 (Testes automatizados passando):** Executar a suíte de testes de segurança em Node.js (`node tests/security.test.js`) e verificar 100% de aprovação.
+- [x] **CA-06 (Persistência de `usuarioId` no pedido):** Verificar no JSON de `deliveryfast_pedidos` que todo novo pedido contém a propriedade `usuarioId` igual ao `id` do usuário que o finalizou.
+- [x] **CA-07 (Testes automatizados passando):** Executar a suíte de testes de segurança em Node.js (`node tests/security.test.js`) e verificar 100% de aprovação.
 
 ---
 
