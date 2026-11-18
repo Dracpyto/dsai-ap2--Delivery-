@@ -25001,11 +25001,49 @@ export const massiveDatabase = [
   { id: 24999, item: 'Produto ID 24999', price: 37498.50, active: true },
 ];
 
-// Carrega os utilizadores cadastrados do localStorage para não perder ao recarregar a página
-export const usuarios = JSON.parse(localStorage.getItem('df_usuarios') || '[]');
+import { gerarHashSenha, sanitizarUsuarioSessao } from './security.js';
 
-// Guarda/recupera o utilizador atualmente logado
-export let usuarioLogado = JSON.parse(localStorage.getItem('df_usuario_logado') || 'null');
+// Higieniza registros legados que eventualmente tenham senha em texto puro no localStorage
+function carregarUsuariosArmazenados() {
+  const brutos = JSON.parse(localStorage.getItem('df_usuarios') || '[]');
+  if (!Array.isArray(brutos)) return [];
+
+  let houveMigracao = false;
+  const normalizados = brutos.map((u) => {
+    if (!u || typeof u !== 'object') return u;
+    if (typeof u.senha === 'string' && u.senha.length > 0) {
+      houveMigracao = true;
+      const copia = {
+        ...u,
+        senhaHash: u.senhaHash || gerarHashSenha(u.senha, u.email || String(u.id || ''))
+      };
+      delete copia.senha;
+      return copia;
+    }
+    return u;
+  });
+
+  if (houveMigracao) {
+    localStorage.setItem('df_usuarios', JSON.stringify(normalizados));
+  }
+  return normalizados;
+}
+
+function carregarSessaoArmazenada() {
+  const bruto = JSON.parse(localStorage.getItem('df_usuario_logado') || 'null');
+  if (!bruto) return null;
+  const limpo = sanitizarUsuarioSessao(bruto);
+  if (bruto.senha !== undefined || bruto.senhaHash !== undefined) {
+    localStorage.setItem('df_usuario_logado', JSON.stringify(limpo));
+  }
+  return limpo;
+}
+
+// Carrega os utilizadores cadastrados do localStorage para não perder ao recarregar a página
+export const usuarios = carregarUsuariosArmazenados();
+
+// Guarda/recupera o utilizador atualmente logado (sem credenciais)
+export let usuarioLogado = carregarSessaoArmazenada();
 
 // Função para registar um novo utilizador
 export function cadastrarUsuario(novoUsuario) {
@@ -25017,25 +25055,33 @@ export function cadastrarUsuario(novoUsuario) {
     throw new Error('USUARIO JÁ CADASTRADO!');
   }
 
-  const usuario = {
+  const dadosSemSenhaEmClaro = { ...novoUsuario };
+  const senhaInformada = dadosSemSenhaEmClaro.senha;
+  delete dadosSemSenhaEmClaro.senha;
+
+  const senhaHash = senhaInformada
+    ? gerarHashSenha(senhaInformada, novoUsuario.email)
+    : undefined;
+
+  const usuarioArmazenado = {
     id: Date.now(),
-    ...novoUsuario,
+    ...dadosSemSenhaEmClaro,
+    ...(senhaHash ? { senhaHash } : {}),
     dataCadastro: new Date().toLocaleString('pt-BR')
   };
 
-  usuarios.push(usuario);
-  usuarioLogado = usuario;
+  usuarios.push(usuarioArmazenado);
+  usuarioLogado = sanitizarUsuarioSessao(usuarioArmazenado);
 
-  // Guarda as alterações no localStorage
+  // Guarda as alterações no localStorage (sem senha em texto puro e sem hash na sessão ativa)
   localStorage.setItem('df_usuarios', JSON.stringify(usuarios));
   localStorage.setItem('df_usuario_logado', JSON.stringify(usuarioLogado));
 
-  console.log('Utilizador logado:', usuarioLogado);
-  return usuario;
+  return usuarioLogado;
 }
 
 export function obterUsuarioLogado() {
-  return usuarioLogado;
+  return usuarioLogado ? sanitizarUsuarioSessao(usuarioLogado) : null;
 }
 export function sairUsuario() {
   usuarioLogado = null;
@@ -25050,7 +25096,7 @@ export function sairUsuario() {
 /**
  * Atualiza os dados do usuário logado no localStorage.
  * @param {Object} dadosAtualizados - Campos novos a mesclar no perfil atual.
- * @returns {Object} Usuário atualizado.
+ * @returns {Object} Usuário atualizado (sem campos de credenciais).
  */
 export function atualizarUsuario(dadosAtualizados) {
   if (!usuarioLogado) throw new Error('Nenhum usuário está logado.');
@@ -25065,28 +25111,38 @@ export function atualizarUsuario(dadosAtualizados) {
     }
   }
 
-  // Mescla os novos dados sobre o perfil atual
-  const usuarioAtualizado = {
+  const idx = usuarios.findIndex((u) => u.id === usuarioLogado.id);
+  const registroAtual = idx !== -1 ? usuarios[idx] : usuarioLogado;
+
+  const novosDados = { ...dadosAtualizados };
+  const novaSenha = novosDados.senha;
+  delete novosDados.senha;
+
+  // Se foi informada uma nova senha não vazia, gera novo hash; caso contrário, preserva o hash anterior
+  const emailReferencia = novosDados.email || registroAtual.email || '';
+  const senhaHashAtualizado = (novaSenha && novaSenha.trim() !== '')
+    ? gerarHashSenha(novaSenha, emailReferencia)
+    : registroAtual.senhaHash;
+
+  // Mescla os novos dados sobre o perfil atual sem expor senha em texto puro
+  const usuarioArmazenado = {
+    ...registroAtual,
     ...usuarioLogado,
-    ...dadosAtualizados,
+    ...novosDados,
+    ...(senhaHashAtualizado ? { senhaHash: senhaHashAtualizado } : {}),
     ultimaAtualizacao: new Date().toLocaleString('pt-BR')
   };
-
-  // Se a nova senha veio em branco, preserva a anterior
-  if (!dadosAtualizados.senha || dadosAtualizados.senha.trim() === '') {
-    usuarioAtualizado.senha = usuarioLogado.senha;
-  }
+  delete usuarioArmazenado.senha;
 
   // Atualiza na lista de usuários
-  const idx = usuarios.findIndex((u) => u.id === usuarioLogado.id);
   if (idx !== -1) {
-    usuarios[idx] = usuarioAtualizado;
+    usuarios[idx] = usuarioArmazenado;
   }
 
-  usuarioLogado = usuarioAtualizado;
+  usuarioLogado = sanitizarUsuarioSessao(usuarioArmazenado);
 
   localStorage.setItem('df_usuarios', JSON.stringify(usuarios));
   localStorage.setItem('df_usuario_logado', JSON.stringify(usuarioLogado));
 
-  return usuarioAtualizado;
+  return usuarioLogado;
 }
