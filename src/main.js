@@ -23,7 +23,7 @@ export function atualizarNavegacao() {
       const inicialSegura = escaparHtml((usuario.nome || '').charAt(0).toUpperCase());
 
       areaUsuario.innerHTML = `
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
           <button
             onclick="window.abrirPerfil()"
             title="${nomeSeguro}"
@@ -32,11 +32,16 @@ export function atualizarNavegacao() {
             <span class="w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center font-bold text-sm">
               ${inicialSegura}
             </span>
-            <span class="text-sm">Olá, ${primeiroNomeSeguro}</span>
+            <span class="text-sm hidden sm:inline">Olá, ${primeiroNomeSeguro}</span>
           </button>
 
-          <button onclick="window.sairDaConta()" class="text-sm text-red-600 hover:underline font-medium">
-            Sair
+          <button
+            onclick="window.sairDaConta()"
+            title="Sair da conta"
+            class="flex items-center gap-1 bg-white text-red-600 border border-red-300 hover:bg-red-50 font-semibold px-3 py-1.5 rounded-full text-sm transition"
+          >
+            <span>⏏</span>
+            <span class="hidden sm:inline">Sair</span>
           </button>
         </div>
       `;
